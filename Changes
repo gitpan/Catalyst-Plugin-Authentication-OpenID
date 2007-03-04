@@ -2,5 +2,12 @@ $Id$
 
 Revision history for Catalyst::Plugin::Authentication::OpenID
 
+0.02  2007.03.04
+    - Skip the $csr instantiation if neither claimed_uri nor openid-check
+      are present (optimization). Thanks to Meng Weng Wong for the patch.
+    - After authentication completes, return to
+      http://mysite.com/path/that/called/openid/ rather than just
+      http://mysite.com/. Thanks to Meng Weng Wong for the patch.
+
 0.01  2005.11.11
     - Initial distribution.

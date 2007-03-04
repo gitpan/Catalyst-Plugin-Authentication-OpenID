@@ -1,4 +1,4 @@
-# $Id: OpenID.pm 1019 2005-11-12 06:39:59Z btrott $
+# $Id: OpenID.pm 1319 2007-03-04 21:04:03Z btrott $
 
 package Catalyst::Plugin::Authentication::OpenID;
 use strict;
@@ -6,10 +6,12 @@ use strict;
 use Net::OpenID::Consumer;
 use LWPx::ParanoidAgent;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub authenticate_openid {
     my($c) = @_;
+
+	return 0 if (not grep { $c->req->param($_) } qw(claimed_uri openid-check));
     
     my $csr = Net::OpenID::Consumer->new(
         ua => LWPx::ParanoidAgent->new,
@@ -21,12 +23,13 @@ sub authenticate_openid {
         my $identity = $csr->claimed_identity($uri)
             or Catalyst::Exception->throw($csr->err);
         my $check_url = $identity->check_url(
-            return_to => $c->req->base . '?openid-check=1',
+            return_to => $c->req->base . $c->req->path . '?openid-check=1',
             trust_root => $c->req->base,
         );
         $c->res->redirect($check_url);
         return 0;
-    } elsif ($c->req->param('openid-check')) {
+    }
+	elsif ($c->req->param('openid-check')) {
         if (my $setup_url = $csr->user_setup_url) {
             $c->res->redirect($setup_url);
             return 0;
@@ -39,8 +42,6 @@ sub authenticate_openid {
             Catalyst::Exception->throw("Error validating identity: " .
                 $csr->err);
         }
-    } else {
-        return 0;
     }
 }
 
